@@ -13,7 +13,7 @@ import (
 	2. 
 */
 
-func main(){
+func main5(){
 
 	// strings.HasPrefix(str,prefix) function checks if the string has a specified prefix.
 	input := "Raghav is a fun loving boy!"
