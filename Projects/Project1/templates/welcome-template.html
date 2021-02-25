@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome {{.Name}}</title>
+    <link rel="stylesheet" href="/static/stylesheets/welcome-template.css">
+</head>
+<body>
+    <div style="display: flex;align-items: center;height: 100vh;align-content: center">
+        <div style="color: white;font-size: 20px;align-content: center;align-items: center; text-align: center">
+            <h1>Welcome {{.Name}}, It is {{.Time}}</h1>
+            <p>{{.QuoteToShow.Quote}}, It is {{.QuoteToShow.Author}}</p>
+        </div>
+    </div>
+<!--    <p "></p>-->
+</body>
+</html>
