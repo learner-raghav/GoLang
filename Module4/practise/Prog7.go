@@ -16,6 +16,10 @@ func main(){
 		}
 	}
 
+	/**
+		SQL Adapter in Go
+		Database/sql
+	 */
 	//Here we are doing our function initialization and then we will just cal that method.
 	count := counter()
 
@@ -24,5 +28,5 @@ func main(){
 	fmt.Println(count())
 	fmt.Println(count())
 	fmt.Println(count())
-	
+
 }
