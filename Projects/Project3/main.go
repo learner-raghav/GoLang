@@ -3,9 +3,9 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	_ "github.com/go-sql-driver/mysql"
 	"errors"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"net/http"
 	"strconv"
 )
@@ -42,6 +42,10 @@ func (dbObject *DBObject) connectToDB(){
 
 func GetById(object DBObject,employee Employee) (Employee,error){
 	db := object.db
+	if db == nil {
+		return Employee{},errors.New("DB not configured properly")
+	}
+
 	viewQuery, err := db.Query("SELECT * FROM employee where employeeid = ?",employee.EmployeeId)
 
 	if err != nil {
@@ -65,8 +69,14 @@ func GetById(object DBObject,employee Employee) (Employee,error){
 	return emp,nil
 }
 
+
 func CreateEmployee(object DBObject,employee Employee) error {
 	db := object.db
+
+	if db == nil {
+		return errors.New("DB not configured properly")
+	}
+
 	insertQuery, err := db.Prepare("INSERT INTO employee(name,email,phone,roleId) values(?,?,?,?)")
 	if err != nil {
 		return err
@@ -81,6 +91,10 @@ func CreateEmployee(object DBObject,employee Employee) error {
 
 func UpdateEmployee(object DBObject, employee Employee) error {
 	db := object.db
+	if db == nil {
+		return errors.New("DB not configured properly")
+	}
+
 	updateQuery, err := db.Prepare("UPDATE employee SET name=?,email=?,phone=?,roleId=? where employeeid = ?")
 	if err != nil {
 		return err
@@ -96,6 +110,11 @@ func UpdateEmployee(object DBObject, employee Employee) error {
 
 func DeleteEmployee(object DBObject,employee Employee) error {
 	db := object.db
+
+	if db == nil {
+		return errors.New("DB not configured properly")
+	}
+
 	deleteStatement,err := db.Prepare("DELETE from employee where employeeid=?")
 	if err != nil {
 		return err
@@ -117,16 +136,21 @@ func DeleteEmployee(object DBObject,employee Employee) error {
 /**
 	Handlers
  */
-func handleGetEmployee(res http.ResponseWriter, req *http.Request){
 
-	if req.Method != "GET" {
-		fmt.Fprintf(res,"Incorrect Method")
-		return
+func (dbObject *DBObject) handleEmployee(res http.ResponseWriter, req *http.Request){
+	switch req.Method {
+		case "GET":
+			dbObject.handleGetEmployee(res, req)
+		case "POST":
+			dbObject.handleCreateEmployee(res,req)
+		case "PUT":
+			dbObject.handleUpdateEmployee(res,req)
+		case "DELETE":
+			dbObject.handleDeleteEmployee(res,req)
 	}
+}
 
-	dbObject := DBObject{}
-	dbObject.connectToDB()
-	defer dbObject.db.Close()
+func (dbObject *DBObject) handleGetEmployee(res http.ResponseWriter, req *http.Request){
 
 	employeeId,err := strconv.Atoi(req.FormValue("id"))
 	emp := Employee{EmployeeId: employeeId}
@@ -134,7 +158,7 @@ func handleGetEmployee(res http.ResponseWriter, req *http.Request){
 		fmt.Fprintf(res, "Invalid Id Format")
 		return
 	}
-	employee,err := GetById(dbObject,emp)
+	employee,err := GetById(*dbObject,emp)
 	if err != nil {
 		fmt.Fprintf(res,err.Error())
 		return
@@ -145,23 +169,15 @@ func handleGetEmployee(res http.ResponseWriter, req *http.Request){
 
 }
 
-func handleCreateEmployee(res http.ResponseWriter, req *http.Request){
+func (dbObject *DBObject) handleCreateEmployee(res http.ResponseWriter, req *http.Request){
 
-	if req.Method != "POST" {
-		fmt.Fprintf(res,"Incorrect Method")
-		return
+	emp := Employee{}
+	err := json.NewDecoder(req.Body).Decode(&emp)
+	if err != nil {
+		fmt.Fprintf(res,"Error UnMarshalling the Body")
 	}
 
-	dbObject := DBObject{}
-	dbObject.connectToDB()
-	defer dbObject.db.Close()
-	emp := Employee{}
-	emp.Name = req.FormValue("name")
-	emp.Email = req.FormValue("email")
-	emp.Phone = req.FormValue("phone")
-	emp.RoleId, _ = strconv.Atoi(req.FormValue("roleId"))
-	fmt.Println(emp)
-	err := CreateEmployee(dbObject,emp)
+	err = CreateEmployee(*dbObject,emp)
 	if err != nil {
 		fmt.Fprintf(res,err.Error())
 		return
@@ -170,33 +186,22 @@ func handleCreateEmployee(res http.ResponseWriter, req *http.Request){
 	fmt.Fprintf(res,"Created Employee Successfully.")
 }
 
-func handleUpdateEmployee(res http.ResponseWriter, req *http.Request) {
+func (dbObject *DBObject) handleUpdateEmployee(res http.ResponseWriter, req *http.Request) {
 
-	if req.Method != "PUT" {
-		fmt.Fprintf(res,"Incorrect Method")
+	employeeId,err := strconv.Atoi(req.FormValue("id"))
+
+	if err != nil {
+		fmt.Fprintf(res, "Invalid Id Format")
 		return
 	}
 
-	dbObject := DBObject{}
-	dbObject.connectToDB()
-	defer dbObject.db.Close()
-
-	emp := Employee{}
-	var err error
-	emp.EmployeeId ,err= strconv.Atoi(req.FormValue("id"))
-
+	var emp Employee
+	err = json.NewDecoder(req.Body).Decode(&emp)
 	if err != nil {
-		fmt.Fprintf(res,"Id type not proper")
+		fmt.Fprintf(res,"Error UnMarshalling the Body")
 	}
-
-	emp.Name = req.FormValue("name")
-	emp.Email = req.FormValue("email")
-	emp.Phone = req.FormValue("phone")
-	emp.RoleId, err = strconv.Atoi(req.FormValue("roleId"))
-	if err != nil {
-		fmt.Fprintf(res,"Role Id not proper")
-	}
-	err = UpdateEmployee(dbObject,emp)
+	emp.EmployeeId = employeeId //Assigning the id to the object.
+	err = UpdateEmployee(*dbObject,emp)
 	if err != nil {
 		fmt.Fprintf(res,err.Error())
 	} else{
@@ -204,14 +209,7 @@ func handleUpdateEmployee(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func handleDeleteEmployee(res http.ResponseWriter, req * http.Request){
-	if req.Method != "DELETE" {
-		fmt.Fprintf(res,"Incorrect Method")
-		return
-	}
-	dbObject := DBObject{}
-	dbObject.connectToDB()
-	defer dbObject.db.Close()
+func (dbObject *DBObject) handleDeleteEmployee(res http.ResponseWriter, req * http.Request){
 
 	employeeId,err := strconv.Atoi(req.FormValue("id"))
 	if err != nil {
@@ -219,7 +217,7 @@ func handleDeleteEmployee(res http.ResponseWriter, req * http.Request){
 		return
 	}
 	emp := Employee{EmployeeId: employeeId}
-	err = DeleteEmployee(dbObject,emp)
+	err = DeleteEmployee(*dbObject,emp)
 
 	if err != nil {
 		fmt.Fprintf(res,err.Error())
@@ -232,11 +230,12 @@ func handleDeleteEmployee(res http.ResponseWriter, req * http.Request){
 
 func main(){
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/getEmployeeById",handleGetEmployee)
-	mux.HandleFunc("/create",handleCreateEmployee)
-	mux.HandleFunc("/update",handleUpdateEmployee)
-	mux.HandleFunc("/delete",handleDeleteEmployee)
+	var dbObject DBObject
+	dbObject.connectToDB()
+	defer dbObject.db.Close()
 
+	mux := http.NewServeMux()
+
+	mux.Handle("/employee",http.HandlerFunc(dbObject.handleEmployee))
 	http.ListenAndServe("0.0.0.0:3000",mux)
 }
