@@ -30,7 +30,7 @@ func getTestCases(dbObject DBObject) []testStruct{
 			employee: Employee{EmployeeId: 100},
 			output: createOutput{
 				employee: Employee{},
-				err: errors.New("Employee record does not exist"),
+				err: errors.New("EmployeeStore record does not exist"),
 			},
 		},
 		{

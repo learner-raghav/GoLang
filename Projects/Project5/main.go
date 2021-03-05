@@ -62,7 +62,7 @@ func (a *api) getEmployeeById(w http.ResponseWriter,req *http.Request){
 		var name,phone,email string
 		err = rows.Scan(&empId,&name,&email,&phone,&roleId)
 		if err != nil {
-			a.fail(w, "failed to scan employee: "+err.Error(), 500)
+			a.fail(w, "failed to scan EmployeeService: "+err.Error(), 500)
 			return
 		}
 		emp = Employee{empId,name,email,phone,roleId}
@@ -88,7 +88,7 @@ func (a *api) createEmployee(w http.ResponseWriter, req *http.Request){
 	employee := Employee{}
 	err := json.NewDecoder(req.Body).Decode(&employee)
 
-	insertQuery, err := db.Prepare("INSERT INTO employee(employeeId,name,email,phone,roleId) values(?,?,?,?,?)")
+	insertQuery, err := db.Prepare("INSERT INTO EmployeeService(employeeId,name,email,phone,roleId) values(?,?,?,?,?)")
 	if err != nil {
 		fmt.Println("hiii",err.Error())
 		a.fail(w,err.Error(),500)
@@ -114,7 +114,7 @@ func (a *api) UpdateEmployee(w http.ResponseWriter,req *http.Request) {
 	err := json.NewDecoder(req.Body).Decode(&employee)
 	employee.EmployeeId = empId
 
-	updateQuery, err := db.Prepare("UPDATE employee SET name=?,email=?,phone=?,roleId=? where employeeid = ?")
+	updateQuery, err := db.Prepare("UPDATE EmployeeService SET name=?,email=?,phone=?,roleId=? where employeeid = ?")
 
 	if err != nil {
 		a.fail(w,err.Error(),500)
@@ -137,7 +137,7 @@ func (a *api) deleteEmployee(w http.ResponseWriter,req *http.Request){
 		a.fail(w,"DB not configured properly",500)
 	}
 
-	deleteStatement,err := db.Prepare("DELETE from employee where employeeid=?")
+	deleteStatement,err := db.Prepare("DELETE from EmployeeService where employeeid=?")
 	if err != nil {
 		a.fail(w,err.Error(),500)
 	}

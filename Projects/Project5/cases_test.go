@@ -39,11 +39,11 @@ func TestCreateEmployee(t *testing.T){
 		RoleId:     4,
 	}
 	body, _ := json.Marshal(data)
-	req := httptest.NewRequest("POST","localhost:3000/employee",bytes.NewBuffer(body))
+	req := httptest.NewRequest("POST","localhost:3000/EmployeeService",bytes.NewBuffer(body))
 
 	w := httptest.NewRecorder()
 
-	mock.ExpectPrepare("INSERT INTO employee(employeeId,name,email,phone,roleId) values(?,?,?,?,?)").
+	mock.ExpectPrepare("INSERT INTO EmployeeService(employeeId,name,email,phone,roleId) values(?,?,?,?,?)").
 		ExpectExec().
 		WithArgs(1,data.Name,data.Email,data.Phone,data.RoleId).
 		WillReturnResult(sqlmock.NewResult(1,1))
@@ -112,11 +112,11 @@ func TestUpdateEmployee(t *testing.T){
 		RoleId:     4,
 	}
 	body, _ := json.Marshal(data)
-	req := httptest.NewRequest("POST","localhost:3000/employee?id="+strconv.Itoa(1),bytes.NewBuffer(body))
+	req := httptest.NewRequest("POST","localhost:3000/EmployeeService?id="+strconv.Itoa(1),bytes.NewBuffer(body))
 
 	w := httptest.NewRecorder()
 
-	mock.ExpectPrepare("UPDATE employee SET name=?,email=?,phone=?,roleId=? where employeeid = ?").
+	mock.ExpectPrepare("UPDATE EmployeeService SET name=?,email=?,phone=?,roleId=? where employeeid = ?").
 		ExpectExec().
 		WithArgs(data.Name,data.Email,data.Phone,data.RoleId,1).
 		WillReturnResult(sqlmock.NewResult(1,1))
@@ -139,11 +139,11 @@ func TestDeleteEmployee(t *testing.T){
 
 	app := &api{db}
 
-	req := httptest.NewRequest("POST","localhost:3000/employee?id="+strconv.Itoa(1),nil)
+	req := httptest.NewRequest("POST","localhost:3000/EmployeeService?id="+strconv.Itoa(1),nil)
 
 	w := httptest.NewRecorder()
 
-	mock.ExpectPrepare("DELETE from employee where employeeid=?").
+	mock.ExpectPrepare("DELETE from EmployeeService where employeeid=?").
 		ExpectExec().
 		WithArgs(1).
 		WillReturnResult(sqlmock.NewResult(1,1))

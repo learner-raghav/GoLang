@@ -1,29 +1,30 @@
-package main
+package EmployeeStore
 
 import (
+	"../../entity"
 	"errors"
 	"github.com/DATA-DOG/go-sqlmock"
 	"testing"
 )
 type Output struct{
-	emp Employee
+	emp entity.Employee
 	err error
 }
 func TestShouldGetEmployee(t *testing.T){
 	var testCases = []struct{
 		desc string
-		input Employee
+		input entity.Employee
 		output Output
 	}{
 		{
 			desc : "EmployeeStore Exists",
-			input: Employee{
+			input: entity.Employee{
 				EmployeeId: 34,
 			},
 			output: Output{
-				Employee{
+				entity.Employee{
 					EmployeeId: 34,
-					Name: "Raghav",
+					FullName: "Raghav",
 					Email: "raghav@ZopSmart.com",
 					Phone: "8384852943",
 					RoleId: 4,
@@ -33,11 +34,11 @@ func TestShouldGetEmployee(t *testing.T){
 		},
 		{
 			desc: "EmployeeStore doesn't exist",
-			input: Employee{
+			input: entity.Employee{
 				EmployeeId: 31,
 			},
 			output: Output{
-				Employee{
+				entity.Employee{
 				},
 				errors.New("EmployeeStore record does not exist"),
 			},
@@ -56,16 +57,12 @@ func TestShouldGetEmployee(t *testing.T){
 	mock.ExpectQuery("SELECT * FROM EmployeeService where employeeId = ?").
 		WithArgs(34).
 		WillReturnRows(rows)
-
+	empStore := New(db)
 	for _,tc := range testCases {
 		t.Run(tc.desc,func(t *testing.T){
-			emp,error := GetById(DBObject{db: db},Employee{EmployeeId: tc.output.emp.EmployeeId})
-
-			if tc.output.emp != emp && error.Error() != tc.output.err.Error(){
-				t.Errorf(err.Error())
-			}
-			if err := mock.ExpectationsWereMet(); err != nil && error != nil{
-				t.Errorf("All expectations were not fulfilled: %v",err)
+			emp,error := empStore.GetById(tc.output.emp.EmployeeId)
+			if tc.output.emp != emp && err != nil && error.Error() != tc.output.err.Error(){
+				t.Errorf(err.Error()+"Expected: %v, Found: %v",tc.output.emp,emp)
 			}
 		})
 	}
@@ -74,20 +71,20 @@ func TestShouldGetEmployee(t *testing.T){
 func TestShouldCreateEmployee(t *testing.T){
 	var testCases = []struct{
 		desc string
-		input Employee
+		input entity.Employee
 		output Output
 	}{
 		{
 			desc : "EmployeeStore Exists",
-			input: Employee{
-				Name:       "Raghav",
+			input: entity.Employee{
+				FullName:       "Raghav",
 				Email:      "raghav@ZopSmart.com",
 				Phone:      "8384852943",
 				RoleId:     4,
 			},
 			output: Output{
-				Employee{
-					Name:       "Raghav",
+				entity.Employee{
+					FullName:  "Raghav",
 					Email:      "raghav@ZopSmart.com",
 					Phone:      "8384852943",
 					RoleId:     4,
@@ -97,18 +94,18 @@ func TestShouldCreateEmployee(t *testing.T){
 		},
 		{
 			desc: "No modifications done",
-			input: Employee{
+			input: entity.Employee{
 				EmployeeId: 2,
 			},
 			output: Output{
-				Employee{
+				entity.Employee{
 				},
 				errors.New("Error occured"),
 			},
 		},
 	}
 	db,mock,err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
-
+	empStore := New(db)
 	if err != nil {
 		t.Fatalf("Error occured : %v",err)
 	}
@@ -118,16 +115,16 @@ func TestShouldCreateEmployee(t *testing.T){
 		t.Run(tc.desc,func(t *testing.T){
 			prepared := mock.ExpectPrepare("INSERT INTO EmployeeService(name,email,phone,roleId) values(?,?,?,?)").
 				ExpectExec().
-				WithArgs(tc.input.Name,tc.input.Email,tc.input.Phone,tc.input.RoleId)
+				WithArgs(tc.input.FullName,tc.input.Email,tc.input.Phone,tc.input.RoleId)
 
 			if tc.output.err.Error() != "Success"{
 				prepared.WillReturnError(errors.New("Error occured"))
 			} else{
 				prepared.WillReturnResult(sqlmock.NewResult(1,1))
 			}
-			emp,error := CreateEmployee(DBObject{db: db},tc.input)
-			if emp != tc.output.emp || error.Error() != tc.output.err.Error(){
-				t.Errorf(err.Error())
+			emp,error := empStore.Create(tc.input)
+			if tc.output.emp != emp && err != nil && error.Error() != tc.output.err.Error(){
+				t.Errorf(err.Error()+"Expected: %v, Found: %v",tc.output.emp,emp)
 			}
 		})
 
@@ -137,22 +134,22 @@ func TestShouldCreateEmployee(t *testing.T){
 func TestShouldUpdateEmployee(t *testing.T){
 	var testCases = []struct{
 		desc string
-		input Employee
+		input entity.Employee
 		output Output
 	}{
 		{
 			desc : "EmployeeStore Exists",
-			input: Employee{
+			input: entity.Employee{
 				EmployeeId: 1,
-				Name: "Raghavs",
+				FullName: "Raghavs",
 				Email: "raghavs@ZopSmart.com",
 				Phone: "8384852943",
 				RoleId: 4,
 			},
 			output: Output{
-				Employee{
+				entity.Employee{
 					EmployeeId: 1,
-					Name: "Raghavs",
+					FullName: "Raghavs",
 					Email: "raghavs@ZopSmart.com",
 					Phone: "8384852943",
 					RoleId: 4,
@@ -162,18 +159,18 @@ func TestShouldUpdateEmployee(t *testing.T){
 		},
 		{
 			desc: "No modifications done",
-			input: Employee{
+			input: entity.Employee{
 				EmployeeId: 2,
 			},
 			output: Output{
-				Employee{
+				entity.Employee{
 				},
 				errors.New("Error occured"),
 			},
 		},
 	}
 	db,mock,err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
-
+	empStore := New(db)
 	if err != nil {
 		t.Fatalf("Error occured : %v",err)
 	}
@@ -183,39 +180,37 @@ func TestShouldUpdateEmployee(t *testing.T){
 		t.Run(tc.desc,func(t *testing.T){
 			prepared := mock.ExpectPrepare("UPDATE EmployeeService SET name=?,email=?,phone=?,roleId=? where employeeid = ?").
 				ExpectExec().
-				WithArgs(tc.input.Name,tc.input.Email,tc.input.Phone,tc.input.RoleId,tc.input.EmployeeId)
+				WithArgs(tc.input.FullName,tc.input.Email,tc.input.Phone,tc.input.RoleId,tc.input.EmployeeId)
 
 			if tc.output.err.Error() != "Success"{
 				prepared.WillReturnError(errors.New("Error occured"))
 			} else{
 				prepared.WillReturnResult(sqlmock.NewResult(0,1))
 			}
-			emp,error := UpdateEmployee(DBObject{db: db},tc.input)
+			emp,error := empStore.Update(tc.input)
 
-			if emp != tc.output.emp || error.Error() != tc.output.err.Error(){
-				t.Errorf(err.Error())
+			if tc.output.emp != emp && err != nil && error.Error() != tc.output.err.Error(){
+				t.Errorf(err.Error()+"Expected: %v, Found: %v",tc.output.emp,emp)
 			}
 		})
-
 	}
-
 }
-
+//
 func TestShouldDeleteEmployee(t *testing.T){
 	var testCases = []struct{
 		desc string
-		input Employee
+		input entity.Employee
 		output Output
 	}{
 		{
 			desc : "EmployeeStore Exists",
-			input: Employee{
+			input: entity.Employee{
 				EmployeeId: 34,
 			},
 			output: Output{
-				Employee{
+				entity.Employee{
 					EmployeeId: 34,
-					Name: "Raghav",
+					FullName: "Raghav",
 					Email: "raghav@ZopSmart.com",
 					Phone: "8384852943",
 					RoleId: 4,
@@ -225,11 +220,11 @@ func TestShouldDeleteEmployee(t *testing.T){
 		},
 		{
 			desc: "EmployeeStore doesn't exist",
-			input: Employee{
+			input: entity.Employee{
 				EmployeeId: 31,
 			},
 			output: Output{
-				Employee{
+				entity.Employee{
 				},
 				errors.New("Record does not exist"),
 			},
@@ -242,7 +237,7 @@ func TestShouldDeleteEmployee(t *testing.T){
 		t.Fatalf("Error occured : %v",err)
 	}
 	defer db.Close()
-
+	empStore := New(db)
 	mock.ExpectQuery("SELECT * FROM EmployeeService where employeeId = ?").
 		WithArgs(34).
 		WillReturnRows(rows)
@@ -264,11 +259,11 @@ func TestShouldDeleteEmployee(t *testing.T){
 
 	for _,tc := range testCases{
 		t.Run(tc.desc,func(t *testing.T){
-			emp,error := DeleteEmployee(DBObject{db: db},Employee{EmployeeId: tc.input.EmployeeId})
-			if emp != tc.output.emp || error.Error() != tc.output.err.Error() {
-				t.Errorf(err.Error())
+			emp,error := empStore.Delete(tc.input.EmployeeId)
+			if tc.output.emp != emp && err != nil && error.Error() != tc.output.err.Error(){
+				t.Errorf(err.Error()+"Expected: %v, Found: %v",tc.output.emp,emp)
 			}
 		})
 	}
 }
-
+//

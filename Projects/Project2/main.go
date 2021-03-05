@@ -48,7 +48,7 @@ func ViewAllEmployees(w http.ResponseWriter, r *http.Request){
 
 	db := dbConn()
 	defer db.Close()
-	rows, err := db.Query("SELECT * FROM employee ORDER BY employeeId DESC")
+	rows, err := db.Query("SELECT * FROM EmployeeService ORDER BY employeeId DESC")
 
 	if err != nil {
 		panic(err.Error())
@@ -78,7 +78,7 @@ func ViewAllEmployees(w http.ResponseWriter, r *http.Request){
 }
 
 /**
-	This is to insert an employee in the database
+	This is to insert an EmployeeService in the database
  */
 func Insert(res http.ResponseWriter,req *http.Request){
 	db := dbConn()
@@ -88,19 +88,19 @@ func Insert(res http.ResponseWriter,req *http.Request){
 	phone := req.FormValue("phone")
 	roleId, _ := strconv.Atoi(req.FormValue("roleid"))
 
-	insertQuery, err := db.Prepare("INSERT INTO employee(name,email,phone,roleId) values(?,?,?,?)")
+	insertQuery, err := db.Prepare("INSERT INTO EmployeeService(name,email,phone,roleId) values(?,?,?,?)")
 	if err != nil {
 		fmt.Println("Error occured")
 	}
 	insertQuery.Exec(name,email,phone,roleId)
-	fmt.Fprintf(res,"Inserted employee record ino the Database")
+	fmt.Fprintf(res,"Inserted EmployeeService record ino the Database")
 }
 
 func ViewAnEmployee(res http.ResponseWriter,req *http.Request){
 	db := dbConn()
 	defer db.Close()
 	employeeId := req.FormValue("id")
-	viewQuery, err := db.Query("SELECT * FROM employee where employeeid = ?",employeeId)
+	viewQuery, err := db.Query("SELECT * FROM EmployeeService where employeeid = ?",employeeId)
 	emp := Employee{}
 	if viewQuery.Next() {
 		var empId,roleId int
@@ -111,7 +111,7 @@ func ViewAnEmployee(res http.ResponseWriter,req *http.Request){
 		}
 		emp = Employee{empId,name,email,phone,roleId}
 	} else{
-		fmt.Fprintf(res,"The employee record does not exist!")
+		fmt.Fprintf(res,"The EmployeeService record does not exist!")
 		return
 	}
 	res.Header().Set("Content-Type","application/json")
@@ -127,7 +127,7 @@ func updateAnEmployee(res http.ResponseWriter,req *http.Request){
 	phone := req.FormValue("phone")
 	roleId, _ := strconv.Atoi(req.FormValue("roleId"))
 
-	updateQuery, err := db.Prepare("UPDATE employee SET name=?,email=?,phone=?,roleId=? where employeeid = ?")
+	updateQuery, err := db.Prepare("UPDATE EmployeeService SET name=?,email=?,phone=?,roleId=? where employeeid = ?")
 	if err != nil {
 		fmt.Println("An error occured!!")
 	}
@@ -149,7 +149,7 @@ func deleteAnEmployee(res http.ResponseWriter,req *http.Request){
 	defer db.Close()
 	idToDelete,_ := strconv.Atoi(req.FormValue("id"))
 
-	deleteStatement,err := db.Prepare("DELETE from employee where employeeid=?")
+	deleteStatement,err := db.Prepare("DELETE from EmployeeService where employeeid=?")
 	if err != nil {
 		fmt.Println("Some error occured")
 	}
@@ -161,7 +161,7 @@ func deleteAnEmployee(res http.ResponseWriter,req *http.Request){
 		return
 	}
 
-	fmt.Fprintf(res,"Deleted the employee with id %d",idToDelete)
+	fmt.Fprintf(res,"Deleted the EmployeeService with id %d",idToDelete)
 }
 
 /**
@@ -182,7 +182,7 @@ func main(){
 	mux.HandleFunc("/",home)
 	mux.HandleFunc("/employees",ViewAllEmployees)
 	mux.HandleFunc("/insert",Insert)
-	mux.HandleFunc("/employee",ViewAnEmployee)
+	mux.HandleFunc("/EmployeeService",ViewAnEmployee)
 	mux.HandleFunc("/update",updateAnEmployee)
 	mux.HandleFunc("/delete",deleteAnEmployee)
 	http.ListenAndServe("0.0.0.0:3000",mux)

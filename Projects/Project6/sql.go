@@ -42,7 +42,7 @@ func GetById(object DBObject,employee Employee) (Employee,error){
 	if db == nil {
 		return Employee{},errors.New("DB not configured properly")
 	}
-	viewQuery, err := db.Query("SELECT * FROM employee where employeeId = ?",employee.EmployeeId)
+	viewQuery, err := db.Query("SELECT * FROM EmployeeService where employeeId = ?",employee.EmployeeId)
 	if err != nil {
 		return Employee{},err
 	}
@@ -58,7 +58,7 @@ func GetById(object DBObject,employee Employee) (Employee,error){
 		}
 		emp = Employee{empId,name,email,phone,roleId}
 	} else{
-		err := errors.New("Employee record does not exist")
+		err := errors.New("EmployeeStore record does not exist")
 		return Employee{},err
 	}
 	return emp, errors.New("Success")
@@ -71,7 +71,7 @@ func CreateEmployee(object DBObject,employee Employee) (Employee, error) {
 		return Employee{}, errors.New("DB not configured properly")
 	}
 
-	insertQuery, err := db.Prepare("INSERT INTO employee(name,email,phone,roleId) values(?,?,?,?)")
+	insertQuery, err := db.Prepare("INSERT INTO EmployeeService(name,email,phone,roleId) values(?,?,?,?)")
 	if err != nil {
 		return Employee{},err
 	}
@@ -88,7 +88,7 @@ func UpdateEmployee(object DBObject, employee Employee) (Employee,error) {
 	if db == nil {
 		return Employee{},errors.New("DB not configured properly")
 	}
-	updateQuery, err := db.Prepare("UPDATE employee SET name=?,email=?,phone=?,roleId=? where employeeid = ?")
+	updateQuery, err := db.Prepare("UPDATE EmployeeService SET name=?,email=?,phone=?,roleId=? where employeeid = ?")
 	if err != nil {
 		return Employee{}, err
 	}
@@ -117,7 +117,7 @@ func DeleteEmployee(object DBObject,employee Employee) (Employee,error) {
 		return Employee{},errors.New("DB not configured properly")
 	}
 
-	deleteStatement,err := db.Prepare("DELETE from employee where employeeid=?")
+	deleteStatement,err := db.Prepare("DELETE from EmployeeService where employeeid=?")
 	if err != nil {
 		return Employee{}, err
 	}

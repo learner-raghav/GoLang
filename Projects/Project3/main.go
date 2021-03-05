@@ -46,7 +46,7 @@ func GetById(object DBObject,employee Employee) (Employee,error){
 		return Employee{},errors.New("DB not configured properly")
 	}
 
-	viewQuery, err := db.Query("SELECT * FROM employee where employeeid = ?",employee.EmployeeId)
+	viewQuery, err := db.Query("SELECT * FROM EmployeeService where employeeid = ?",employee.EmployeeId)
 
 	if err != nil {
 		return Employee{},err
@@ -63,7 +63,7 @@ func GetById(object DBObject,employee Employee) (Employee,error){
 		}
 		emp = Employee{empId,name,email,phone,roleId}
 	} else{
-		err := errors.New("Employee record does not exist")
+		err := errors.New("EmployeeStore record does not exist")
 		return Employee{},err
 	}
 	return emp,nil
@@ -77,7 +77,7 @@ func CreateEmployee(object DBObject,employee Employee) error {
 		return errors.New("DB not configured properly")
 	}
 
-	insertQuery, err := db.Prepare("INSERT INTO employee(name,email,phone,roleId) values(?,?,?,?)")
+	insertQuery, err := db.Prepare("INSERT INTO EmployeeService(name,email,phone,roleId) values(?,?,?,?)")
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func UpdateEmployee(object DBObject, employee Employee) error {
 		return errors.New("DB not configured properly")
 	}
 
-	updateQuery, err := db.Prepare("UPDATE employee SET name=?,email=?,phone=?,roleId=? where employeeid = ?")
+	updateQuery, err := db.Prepare("UPDATE EmployeeService SET name=?,email=?,phone=?,roleId=? where employeeid = ?")
 	if err != nil {
 		return err
 	}
@@ -115,7 +115,7 @@ func DeleteEmployee(object DBObject,employee Employee) error {
 		return errors.New("DB not configured properly")
 	}
 
-	deleteStatement,err := db.Prepare("DELETE from employee where employeeid=?")
+	deleteStatement,err := db.Prepare("DELETE from EmployeeService where employeeid=?")
 	if err != nil {
 		return err
 	}
@@ -183,7 +183,7 @@ func (dbObject *DBObject) handleCreateEmployee(res http.ResponseWriter, req *htt
 		return
 	}
 
-	fmt.Fprintf(res,"Created Employee Successfully.")
+	fmt.Fprintf(res,"Created EmployeeStore Successfully.")
 }
 
 func (dbObject *DBObject) handleUpdateEmployee(res http.ResponseWriter, req *http.Request) {
@@ -205,7 +205,7 @@ func (dbObject *DBObject) handleUpdateEmployee(res http.ResponseWriter, req *htt
 	if err != nil {
 		fmt.Fprintf(res,err.Error())
 	} else{
-		fmt.Fprintf(res,"Employee Updated Successfully!!")
+		fmt.Fprintf(res,"EmployeeStore Updated Successfully!!")
 	}
 }
 
@@ -224,7 +224,7 @@ func (dbObject *DBObject) handleDeleteEmployee(res http.ResponseWriter, req * ht
 		return
 	}
 
-	fmt.Fprintf(res,"Employee Deleted Successfully")
+	fmt.Fprintf(res,"EmployeeStore Deleted Successfully")
 
 }
 
@@ -236,6 +236,6 @@ func main(){
 
 	mux := http.NewServeMux()
 
-	mux.Handle("/employee",http.HandlerFunc(dbObject.handleEmployee))
+	mux.Handle("/EmployeeService",http.HandlerFunc(dbObject.handleEmployee))
 	http.ListenAndServe("0.0.0.0:3000",mux)
 }
