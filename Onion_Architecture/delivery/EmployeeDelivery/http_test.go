@@ -2,14 +2,17 @@ package EmployeeDelivery
 
 import (
 	"../../entity"
-	"../../service/EmployeeService"
+	"Onion_Architecture/delivery/EmployeeDelivery"
+	"Onion_Architecture/service/EmployeeService"
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/golang/mock/gomock"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
+	"../../mocks"
 )
 
 
@@ -98,15 +101,17 @@ func TestEmployeeGet(t *testing.T){
 			response{Emp: entity.Employee{},Msg: "Id does not exist"},
 		},
 	}
-
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 	for _,tc := range testCases {
 		t.Run(tc.desc,func(t *testing.T){
 			a := strconv.Itoa(tc.id)
 			req := httptest.NewRequest("GET","/employee?id="+a,nil)
 			res := httptest.NewRecorder()
-
-			emp := New(mockDataStore{})
-			emp.getById(res,req)
+			m := mock_store.NewMockEmployeeStoreHandler(ctrl)
+			m.EXPECT().GetById(tc.id).Return(tc.output.Emp,tc.output.Msg)
+			emp := New(m)
+			emp.Handle(res,req)
 			var op response
 			json.NewDecoder(res.Body).Decode(&op)
 			if tc.output.Emp != op.Emp || tc.output.Msg != op.Msg {
@@ -149,15 +154,17 @@ func TestEmployeeCreate(t *testing.T){
 			},Msg: "Success"},
 		},
 	}
-
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 	for _,tc := range testCases {
 		t.Run(tc.desc,func(t *testing.T){
 			body, _ := json.Marshal(tc.emp)
 			req := httptest.NewRequest("POST","/employee",bytes.NewBuffer(body))
 			res := httptest.NewRecorder()
-
-			emp := New(mockDataStore{})
-			emp.create(res,req)
+			m := mock_store.NewMockEmployeeStoreHandler(ctrl)
+			m.EXPECT().Create(tc.emp).Return(tc.output.Emp,tc.output.Msg)
+			emp := EmployeeDelivery.New(m)
+			emp.Handle(res,req)
 			var op response
 			json.NewDecoder(res.Body).Decode(&op)
 			if tc.output.Emp != op.Emp || tc.output.Msg != op.Msg {
@@ -204,11 +211,14 @@ func TestEmployeeUpdate(t *testing.T){
 	for _,tc := range testCases {
 		t.Run(tc.desc,func(t *testing.T){
 			body, _ := json.Marshal(tc.emp)
-			req := httptest.NewRequest("POST","/employee?id="+strconv.Itoa(tc.emp.EmployeeId),bytes.NewBuffer(body))
+			req := httptest.NewRequest("PUT","/employee?id="+strconv.Itoa(tc.emp.EmployeeId),bytes.NewBuffer(body))
 			res := httptest.NewRecorder()
-
-			emp := New(mockDataStore{})
-			emp.update(res,req)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			m := mock_store.NewMockEmployeeStoreHandler(ctrl)
+			m.EXPECT().Update(tc.emp).Return(tc.output.Emp,tc.output.Msg)
+			emp := New(m)
+			emp.Handle(res,req)
 			var op response
 			json.NewDecoder(res.Body).Decode(&op)
 
@@ -248,10 +258,14 @@ func TestEmployeeDelete(t *testing.T){
 	for _,tc := range testCases {
 		t.Run(tc.desc,func(t *testing.T){
 			a := strconv.Itoa(tc.id)
-			req := httptest.NewRequest("GET","/employee?id="+a,nil)
+			req := httptest.NewRequest("DELETE","/employee?id="+a,nil)
 			res := httptest.NewRecorder()
-			emp := New(mockDataStore{})
-			emp.delete(res,req)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			m := mock_store.NewMockEmployeeStoreHandler(ctrl)
+			m.EXPECT().Delete(tc.id).Return(tc.output.Emp,tc.output.Msg)
+			emp := EmployeeDelivery.New(m)
+			emp.Handle(res,req)
 			var op response
 			json.NewDecoder(res.Body).Decode(&op)
 			if tc.output.Emp != op.Emp || tc.output.Msg != op.Msg {

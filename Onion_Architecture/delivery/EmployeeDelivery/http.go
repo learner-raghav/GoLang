@@ -102,13 +102,7 @@ func (empHandler EmployeeHandler) update(res http.ResponseWriter,req *http.Reque
 	}
 
 	var emp entity.Employee
-	err = json.NewDecoder(req.Body).Decode(&emp)
-	if err != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-		r := response{Msg: "Error UnMarshalling the Body",Emp: entity.Employee{}}
-		json.NewEncoder(res).Encode(r)
-		return
-	}
+	json.NewDecoder(req.Body).Decode(&emp)
 	emp.EmployeeId = employeeId //Assigning the id to the object.
 	employee,err := empHandler.empService.Update(emp)
 	if err != nil {
