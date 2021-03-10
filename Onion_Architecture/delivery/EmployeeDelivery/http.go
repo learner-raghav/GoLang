@@ -13,7 +13,7 @@ type EmployeeHandler struct {
 }
 
 
-type response struct{
+type Response struct{
 	Msg string
 	Emp entity.Employee
 }
@@ -47,7 +47,7 @@ func (empHandler EmployeeHandler) getById(res http.ResponseWriter,req *http.Requ
 
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
-		r := response{Msg: "Invalid Id Format",Emp: entity.Employee{}}
+		r := Response{Msg: "Invalid Id Format",Emp: entity.Employee{}}
 		json.NewEncoder(res).Encode(r)
 		return
 	}
@@ -56,12 +56,12 @@ func (empHandler EmployeeHandler) getById(res http.ResponseWriter,req *http.Requ
 
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
-		r := response{Msg: err.Error(),Emp: entity.Employee{}}
+		r := Response{Msg: err.Error(),Emp: entity.Employee{}}
 		json.NewEncoder(res).Encode(r)
 		return
 	}
 	res.WriteHeader(http.StatusOK)
-	r := response{Msg: "Success",Emp: employee}
+	r := Response{Msg: "Success",Emp: employee}
 	json.NewEncoder(res).Encode(r)
 }
 
@@ -80,13 +80,13 @@ func (empHandler EmployeeHandler) create(res http.ResponseWriter,req *http.Reque
 	employee,err := empHandler.empService.Create(emp)
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
-		r := response{Msg: err.Error(),Emp: entity.Employee{}}
+		r := Response{Msg: err.Error(),Emp: entity.Employee{}}
 		json.NewEncoder(res).Encode(r)
 		return
 	}
 
 	res.WriteHeader(http.StatusOK)
-	r := response{Msg: "Success",Emp: employee}
+	r := Response{Msg: "Success",Emp: employee}
 	json.NewEncoder(res).Encode(r)
 }
 
@@ -96,7 +96,7 @@ func (empHandler EmployeeHandler) update(res http.ResponseWriter,req *http.Reque
 
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
-		r := response{Msg: "Invalid Id Format",Emp: entity.Employee{}}
+		r := Response{Msg: "Invalid Id Format",Emp: entity.Employee{}}
 		json.NewEncoder(res).Encode(r)
 		return
 	}
@@ -107,12 +107,12 @@ func (empHandler EmployeeHandler) update(res http.ResponseWriter,req *http.Reque
 	employee,err := empHandler.empService.Update(emp)
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
-		r := response{Msg: err.Error(),Emp: entity.Employee{}}
+		r := Response{Msg: err.Error(),Emp: entity.Employee{}}
 		json.NewEncoder(res).Encode(r)
 		return
 	}
 	res.WriteHeader(http.StatusOK)
-	r := response{Msg: "Employee Updated Successfully!!",Emp: employee}
+	r := Response{Msg: "Employee Updated Successfully!!",Emp: employee}
 	json.NewEncoder(res).Encode(r)
 }
 
@@ -122,7 +122,7 @@ func (empHandler EmployeeHandler) delete(res http.ResponseWriter,req *http.Reque
 	employeeId,err := strconv.Atoi(req.FormValue("id"))
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
-		r := response{Msg: "Invalid Id Format",Emp: entity.Employee{}}
+		r := Response{Msg: "Invalid Id Format",Emp: entity.Employee{}}
 		json.NewEncoder(res).Encode(r)
 		return
 	}
@@ -130,12 +130,12 @@ func (empHandler EmployeeHandler) delete(res http.ResponseWriter,req *http.Reque
 
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
-		r := response{Msg: err.Error(),Emp: entity.Employee{}}
+		r := Response{Msg: err.Error(),Emp: entity.Employee{}}
 		json.NewEncoder(res).Encode(r)
 		return
 	}
 	res.WriteHeader(http.StatusOK)
-	r := response{Msg: "Employee Deleted Successfully",Emp: emp}
+	r := Response{Msg: "Employee Deleted Successfully",Emp: emp}
 	json.NewEncoder(res).Encode(r)
 
 }

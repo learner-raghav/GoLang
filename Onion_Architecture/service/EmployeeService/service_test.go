@@ -2,8 +2,8 @@ package EmployeeDelivery
 
 import (
 	"../../entity"
-	"Onion_Architecture/delivery/EmployeeDelivery"
 	"Onion_Architecture/service/EmployeeService"
+	"Onion_Architecture/delivery/EmployeeDelivery"
 	"bytes"
 	"encoding/json"
 	"github.com/golang/mock/gomock"
@@ -13,6 +13,10 @@ import (
 	"testing"
 	"../../mocks"
 )
+type response struct{
+	Msg string
+	Emp entity.Employee
+}
 
 func TestEmployeeGet(t *testing.T){
 	testCases := []struct{

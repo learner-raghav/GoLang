@@ -13,7 +13,7 @@ type Car struct {
 }
 
 func (v *Vehicle) details(){
-	fmt.Println("The Vehicle is of company "+v.company+" and the model is "+v.model)
+	fmt.Println("The Vehicle is of company "+v.company+" and the entity is "+v.model)
 }
 
 //func (c *Car) details(){
